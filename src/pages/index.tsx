@@ -1,11 +1,12 @@
 import type { NextPage } from 'next'
 import { Layout } from 'src/components/layout'
-import { useOpenlogin } from 'src/hooks/openlogin'
+import { useOpenlogin } from 'src/hooks/useOpenlogin'
 
 const Home: NextPage = () => {
-  const { openlogin, login, privateKey } = useOpenlogin()
+  const { data: openlogin } = useOpenlogin()
+  console.log(openlogin)
   const handleClick = async () => {
-    await login()
+    await openlogin?.login()
   }
 
   const handleClick2 = async () => {
@@ -23,7 +24,7 @@ const Home: NextPage = () => {
         login
       </button>
       <button className='p-2' onClick={handleClick2}>
-        confirm
+        {openlogin?.privKey}
       </button>
       <button className='p-2' onClick={handleLogout}>
         logout
