@@ -36,6 +36,8 @@ export const useWeb3 = () => {
     if (privKey) {
       const account = web3.eth.accounts.privateKeyToAccount(privKey)
       setAccount({ address: account.address, privateKey: account.privateKey })
+    } else {
+      setAccount({ address: '', privateKey: '' })
     }
   }, [openlogin, web3.eth.accounts, setAccount])
 
@@ -48,6 +50,8 @@ export const useWeb3 = () => {
     const EthereumTx = require('ethereumjs-tx').Transaction
     const details = {
       nonce: 0,
+      // gasPrice: 100,
+      // gasLimit: 500000,
       gasPrice: 0,
       gasLimit: 8000000,
       from: address,
@@ -68,6 +72,7 @@ export const useWeb3 = () => {
       web3.eth.getTransactionCount(address, async (err, nonce) => {
         details.nonce = nonce
         const transaction = await new EthereumTx(details, { common: customCommon })
+        console.log(privateKey)
         transaction.sign(Buffer.from(privateKey.slice(2), 'hex'))
         const rawdata = '0x' + transaction.serialize().toString('hex')
         await web3.eth
