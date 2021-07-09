@@ -1,8 +1,9 @@
 import artifacts from 'blockchain/build/Token.json'
 import Common from 'ethereumjs-common'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
-import { accountState, web3State } from 'src/state/web3'
+import { useOpenlogin } from 'src/hooks/useOpenlogin'
+import { accountState, contractState, web3State } from 'src/state/web3'
 import useSWR from 'swr'
 
 declare global {
@@ -14,24 +15,33 @@ declare global {
 
 export const useWeb3 = () => {
   const web3 = useRecoilValue(web3State)
+  const [contract, setContract] = useRecoilState(contractState)
   const [{ address, privateKey }, setAccount] = useRecoilState(accountState)
+  const { data: openlogin } = useOpenlogin()
 
   const { data: networkId } = useSWR('networkId', () => web3.eth.net.getId(), { revalidateOnFocus: false })
 
-  const { data: contract } = useSWR(
-    ['contract', networkId],
-    (_, id) => new web3.eth.Contract((artifacts as any).abi, (artifacts as any).networks[id].address),
-    { revalidateOnFocus: false },
-  )
-  console.log(networkId, contract)
+  const fetchContract = useCallback(async () => {
+    if (!networkId) return
+    const contract = new web3.eth.Contract((artifacts as any).abi, (artifacts as any).networks[networkId].address)
+    setContract(contract)
+  }, [web3, networkId, setContract])
 
-  const createAccount = useCallback(
-    (privateKey: string) => {
-      const account = web3.eth.accounts.privateKeyToAccount(privateKey)
-      setAccount({ address: account.address, privateKey })
-    },
-    [web3.eth.accounts, setAccount],
-  )
+  useEffect(() => {
+    fetchContract()
+  }, [fetchContract])
+
+  const fetchAccount = useCallback(() => {
+    const privKey = openlogin?.privKey
+    if (privKey) {
+      const account = web3.eth.accounts.privateKeyToAccount(privKey)
+      setAccount({ address: account.address, privateKey: account.privateKey })
+    }
+  }, [openlogin, web3.eth.accounts, setAccount])
+
+  useEffect(() => {
+    fetchAccount()
+  }, [fetchAccount])
 
   const toContract = async (functionAbi: any) => {
     if (!web3 || !contract) return
@@ -82,6 +92,5 @@ export const useWeb3 = () => {
     address,
     privateKey,
     toContract,
-    createAccount,
   }
 }

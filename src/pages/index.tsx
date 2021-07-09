@@ -5,9 +5,14 @@ import { useWeb3 } from 'src/hooks/useWeb3'
 
 const Home: NextPage = () => {
   const { data: openlogin } = useOpenlogin()
-  const { web3, contract } = useWeb3()
-  const handleClick = async () => {
-    await openlogin?.login()
+  const { address, privateKey, contract } = useWeb3()
+  const handleClickLogin = async () => {
+    if (!openlogin) return
+    try {
+      await openlogin.login()
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   const handleClick2 = async () => {
@@ -16,12 +21,12 @@ const Home: NextPage = () => {
   }
 
   const handleLogout = async () => {
-    await openlogin?.logout({ fastLogin: false })
+    await openlogin?.logout()
   }
 
   return (
     <Layout>
-      <button className='p-2' onClick={handleClick}>
+      <button className='p-2' onClick={handleClickLogin}>
         login
       </button>
       <button className='p-2' onClick={handleClick2}>
@@ -30,6 +35,11 @@ const Home: NextPage = () => {
       <button className='p-2' onClick={handleLogout}>
         logout
       </button>
+
+      <ul>
+        <li>address: {address}</li>
+        <li>privateKey: {privateKey}</li>
+      </ul>
     </Layout>
   )
 }

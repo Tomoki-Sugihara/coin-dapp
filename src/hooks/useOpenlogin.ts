@@ -14,5 +14,4 @@ const fetchOpenlogin = async () => {
     })
 }
 
-export const useOpenlogin = () =>
-  useSWR('openlogin', fetchOpenlogin, { revalidateOnFocus: false, revalidateOnMount: false })
+export const useOpenlogin = () => useSWR('openlogin', fetchOpenlogin, { revalidateOnFocus: false })
