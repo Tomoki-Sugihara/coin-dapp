@@ -2,5 +2,4 @@
 **/out/*
 **/.next/*
 /.eslintrc.js
-
-/blockchain
+blockchain

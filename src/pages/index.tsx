@@ -1,17 +1,18 @@
 import type { NextPage } from 'next'
 import { Layout } from 'src/components/layout'
 import { useOpenlogin } from 'src/hooks/useOpenlogin'
+import { useWeb3 } from 'src/hooks/useWeb3'
 
 const Home: NextPage = () => {
   const { data: openlogin } = useOpenlogin()
-  console.log(openlogin)
+  const { web3, contract } = useWeb3()
   const handleClick = async () => {
     await openlogin?.login()
   }
 
   const handleClick2 = async () => {
-    console.log(openlogin?.state.privKey)
-    console.log(openlogin)
+    const supply = await contract?.methods.totalSupply().call()
+    console.log(supply)
   }
 
   const handleLogout = async () => {
@@ -24,7 +25,7 @@ const Home: NextPage = () => {
         login
       </button>
       <button className='p-2' onClick={handleClick2}>
-        {openlogin?.privKey}
+        supply
       </button>
       <button className='p-2' onClick={handleLogout}>
         logout

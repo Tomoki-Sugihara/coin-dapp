@@ -1,6 +1,6 @@
 import useSWR from 'swr'
 
-const fetchOpenlogin = () => {
+const fetchOpenlogin = async () => {
   return import('@toruslabs/openlogin')
     .then((x) => x.default)
     .then(async (Openlogin) => {
