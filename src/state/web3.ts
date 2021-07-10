@@ -4,6 +4,7 @@ import type { Contract } from 'web3-eth-contract'
 
 export const web3State = atom<Web3>({
   key: 'web3State',
+  // default: new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:9545/')),
   default: new Web3(new Web3.providers.HttpProvider(process.env.NEXT_PUBLIC_PRIVATE_CHAIN_URL as string)),
   dangerouslyAllowMutability: true,
 })
