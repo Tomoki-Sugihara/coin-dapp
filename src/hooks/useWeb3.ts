@@ -3,25 +3,21 @@ import Common from 'ethereumjs-common'
 import { useCallback, useEffect } from 'react'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { useOpenlogin } from 'src/hooks/useOpenlogin'
+import { userState } from 'src/state/user'
 import { accountState, contractState, web3State } from 'src/state/web3'
+import { auth, db } from 'src/utils/firebase'
 import useSWR from 'swr'
-
-declare global {
-  interface Window {
-    ethereum: any
-    web3: any
-  }
-}
 
 export const useWeb3 = () => {
   const web3 = useRecoilValue(web3State)
   const [contract, setContract] = useRecoilState(contractState)
-  const [{ address, privateKey }, setAccount] = useRecoilState(accountState)
+  const [account, setAccount] = useRecoilState(accountState)
+  const [{ uid }, setUser] = useRecoilState(userState)
   const { data: openlogin } = useOpenlogin()
 
   const { data: networkId } = useSWR('networkId', () => web3.eth.net.getId(), { revalidateOnFocus: false })
 
-  const fetchContract = useCallback(async () => {
+  const fetchContract = useCallback(() => {
     if (!networkId) return
     const contract = new web3.eth.Contract((artifacts as any).abi, (artifacts as any).networks[networkId].address)
     setContract(contract)
@@ -31,15 +27,38 @@ export const useWeb3 = () => {
     fetchContract()
   }, [fetchContract])
 
-  const fetchAccount = useCallback(() => {
-    const privKey = openlogin?.privKey
+  const fetchAccount = useCallback(async () => {
+    if (!openlogin) return
+    const privKey = openlogin.privKey
+    // already logged in torus
     if (privKey) {
-      const account = web3.eth.accounts.privateKeyToAccount(privKey)
-      setAccount({ address: account.address, privateKey: account.privateKey })
+      const { address, privateKey } = web3.eth.accounts.privateKeyToAccount(privKey)
+      setAccount({ address, privateKey })
+
+      if (!uid) {
+        const userInfo = await openlogin.getUserInfo()
+        const userCredential = await auth
+          .signInWithEmailAndPassword(userInfo.email, privateKey)
+          .catch(async (error) => {
+            if (error.code === 'auth/user-not-found') {
+              return await auth.createUserWithEmailAndPassword(userInfo.email, privateKey)
+            }
+            throw new Error(`Failed to firebase login \n\n${error}`)
+          })
+
+        const { user, additionalUserInfo } = userCredential
+        if (user) {
+          const { uid } = user
+          if (additionalUserInfo?.isNewUser) {
+            await db.doc(`users/${uid}`).set({ address }, { merge: true })
+          }
+          setUser({ uid })
+        }
+      }
     } else {
       setAccount({ address: '', privateKey: '' })
     }
-  }, [openlogin, web3.eth.accounts, setAccount])
+  }, [openlogin, uid, web3.eth, setUser, setAccount])
 
   useEffect(() => {
     fetchAccount()
@@ -50,11 +69,9 @@ export const useWeb3 = () => {
     const EthereumTx = require('ethereumjs-tx').Transaction
     const details = {
       nonce: 0,
-      // gasPrice: 100,
-      // gasLimit: 500000,
       gasPrice: 0,
       gasLimit: 8000000,
-      from: address,
+      from: account.address,
       to: contract.options.address,
       data: functionAbi,
     }
@@ -69,11 +86,10 @@ export const useWeb3 = () => {
     )
 
     return new Promise<void>((resolve, reject) => {
-      web3.eth.getTransactionCount(address, async (err, nonce) => {
+      web3.eth.getTransactionCount(account.address, async (err, nonce) => {
         details.nonce = nonce
         const transaction = await new EthereumTx(details, { common: customCommon })
-        console.log(privateKey)
-        transaction.sign(Buffer.from(privateKey.slice(2), 'hex'))
+        transaction.sign(Buffer.from(account.privateKey.slice(2), 'hex'))
         const rawdata = '0x' + transaction.serialize().toString('hex')
         await web3.eth
           .sendSignedTransaction(rawdata)
@@ -90,6 +106,7 @@ export const useWeb3 = () => {
     })
   }
 
+  const { address, privateKey } = account
   return {
     web3,
     networkId,
