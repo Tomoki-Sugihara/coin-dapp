@@ -1,10 +1,10 @@
 import Common from 'ethereumjs-common'
-import { config } from 'firebase-functions'
 import Web3 from 'web3'
 import type { Contract } from 'web3-eth-contract'
 
+import { chainId } from './config'
+
 export const getWeb3 = () => {
-  const chainId = config().contract.chainId
   const web3 = new Web3(new Web3.providers.HttpProvider(chainId))
   return web3
 }

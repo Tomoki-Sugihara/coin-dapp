@@ -1,6 +1,7 @@
 // import * as admin from 'firebase-admin'
 import * as functions from 'firebase-functions'
 
+import { ownerAddress, ownerPrivateKey } from './utils/config'
 import { getContract, getWeb3, runContract } from './utils/web3'
 
 const miningInitialToken = async (snapshot: functions.firestore.QueryDocumentSnapshot) => {
@@ -12,8 +13,6 @@ const miningInitialToken = async (snapshot: functions.firestore.QueryDocumentSna
   const web3 = getWeb3()
   const tokenContract = getContract(web3, tokenArtifacts, 1515)
   const abi = tokenContract.methods.initialToken(address).encodeABI()
-  const ownerAddress = functions.config().contract.ownerAddress
-  const ownerPrivateKey = functions.config().contract.ownerPrivateKey
 
   await runContract(web3, tokenContract, 1515, abi, ownerAddress, ownerPrivateKey)
 }
