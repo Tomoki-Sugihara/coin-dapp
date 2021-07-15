@@ -64,11 +64,12 @@ export const useWeb3 = () => {
     fetchAccount()
   }, [fetchAccount])
 
-  const toContract = async (functionAbi: any) => {
-    if (!web3 || !contract) return
-    const EthereumTx = require('ethereumjs-tx').Transaction
+  const runContract = async (functionAbi: any) => {
+    if (!contract) return
+
+    const nonce = await web3.eth.getTransactionCount(account.address)
     const details = {
-      nonce: 0,
+      nonce,
       gasPrice: 0,
       gasLimit: 8000000,
       from: account.address,
@@ -77,33 +78,19 @@ export const useWeb3 = () => {
     }
     const customCommon = Common.forCustomChain(
       'mainnet',
-      {
-        name: 'privatechain',
-        networkId: networkId,
-        chainId: networkId,
-      },
+      { name: 'privatechain', networkId, chainId: networkId },
       'petersburg',
     )
 
-    return new Promise<void>((resolve, reject) => {
-      web3.eth.getTransactionCount(account.address, async (err, nonce) => {
-        details.nonce = nonce
-        const transaction = await new EthereumTx(details, { common: customCommon })
-        transaction.sign(Buffer.from(account.privateKey.slice(2), 'hex'))
-        const rawdata = '0x' + transaction.serialize().toString('hex')
-        await web3.eth
-          .sendSignedTransaction(rawdata)
-          .on('transactionHash', (hash) => {
-            console.log(['transferToStaging Trx Hash:' + hash]) // eslint-disable-line no-console
-          })
-          .on('receipt', async (receipt) => {
-            resolve(console.log(['transferToStaging Receipt:', receipt])) // eslint-disable-line no-console
-          })
-          .on('error', (error) => {
-            reject(console.error(error))
-          })
-      })
-    })
+    const Transaction = require('ethereumjs-tx').Transaction
+    const transaction = new Transaction(details, { common: customCommon })
+    transaction.sign(Buffer.from(account.privateKey.slice(2), 'hex'))
+    const rawData = '0x' + transaction.serialize().toString('hex')
+
+    await web3.eth
+      .sendSignedTransaction(rawData)
+      .on('receipt', (receipt) => console.log(receipt)) // eslint-disable-line no-console
+      .on('error', (error) => console.error(error))
   }
 
   const { address, privateKey } = account
@@ -113,6 +100,6 @@ export const useWeb3 = () => {
     contract,
     address,
     privateKey,
-    toContract,
+    runContract,
   }
 }
