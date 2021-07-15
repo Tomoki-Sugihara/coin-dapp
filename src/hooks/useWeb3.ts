@@ -37,6 +37,8 @@ export const useWeb3 = () => {
 
       if (!uid) {
         const userInfo = await openlogin.getUserInfo()
+        if (!userInfo.email) return
+
         const userCredential = await auth
           .signInWithEmailAndPassword(userInfo.email, privateKey)
           .catch(async (error) => {

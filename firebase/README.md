@@ -8,12 +8,21 @@
 
 取得
 
-```command
+```
 firebase functions:config:get
 ```
 
 セット
 
-```command
+```
 firebase functions:config:set 〇〇=〇〇
 ```
+
+### デプロイ
+
+#### predeploy
+
+- firebase.json の functions.predeploy に記載
+
+1. typescript をコンパイル
+2. blockchain/build ディレクトリをコピー
