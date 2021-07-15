@@ -2,10 +2,10 @@ import Common from 'ethereumjs-common'
 import Web3 from 'web3'
 import type { Contract } from 'web3-eth-contract'
 
-import { chainId } from './config'
+import { chainUrl } from './config'
 
 export const getWeb3 = () => {
-  const web3 = new Web3(new Web3.providers.HttpProvider(chainId))
+  const web3 = new Web3(new Web3.providers.HttpProvider(chainUrl))
   return web3
 }
 

@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { config } from 'firebase-functions'
 
 const {
-  contract: { chainId, ownerAddress, ownerPrivateKey },
+  contract: { chain_url: chainUrl, owner_address: ownerAddress, owner_private_key: ownerPrivateKey },
 } = config()
 
-export { chainId, ownerAddress, ownerPrivateKey }
+export { chainUrl, ownerAddress, ownerPrivateKey }
