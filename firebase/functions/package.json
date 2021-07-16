@@ -3,10 +3,12 @@
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
     "build": "yarn tsc",
-    "serve": "yarn build && firebase emulators:start --only functions",
+    "serve": "yarn copy:contract && yarn build && firebase emulators:start --only functions",
+    "serve2": "yarn copy:contract && yarn build && firebase emulators:start --only functions,firestore",
     "shell": "yarn build && firebase functions:shell",
     "start": "yarn shell",
-    "deploy": "yarn build && firebase deploy --only functions",
+    "copy:contract": "cp -r ../../blockchain/build/ ./src/contracts/build",
+    "deploy": "yarn copy:contract && yarn build && firebase deploy --only functions",
     "logs": "firebase functions:log"
   },
   "engines": {

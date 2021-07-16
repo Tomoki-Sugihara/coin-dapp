@@ -2,6 +2,7 @@ import type { NextPage } from 'next'
 import { Layout } from 'src/components/layout'
 import { useOpenlogin } from 'src/hooks/useOpenlogin'
 import { useWeb3 } from 'src/hooks/useWeb3'
+import { functions } from 'src/utils/firebase'
 
 const Home: NextPage = () => {
   const { data: openlogin } = useOpenlogin()
@@ -21,7 +22,9 @@ const Home: NextPage = () => {
   }
 
   const handleClick3 = async () => {
-    console.log(web3.eth.accounts)
+    functions.useEmulator('localhost', 5001)
+    const createdUsersDoc = functions.httpsCallable('createdUsersDoc')
+    await createdUsersDoc()
   }
 
   const handleLogout = async () => {
@@ -37,7 +40,7 @@ const Home: NextPage = () => {
         supply
       </button>
       <button className='p-2' onClick={handleClick3}>
-        accounts
+        functions exe
       </button>
       <button className='p-2' onClick={handleLogout}>
         logout
