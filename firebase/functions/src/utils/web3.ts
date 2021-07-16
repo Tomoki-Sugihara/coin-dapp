@@ -44,6 +44,7 @@ export const runContract = async (
 
   await web3.eth
     .sendSignedTransaction(rawData)
-    .on('receipt', (receipt) => console.log(receipt)) // eslint-disable-line no-console
-    .on('error', (error) => console.error(error))
+    .on('transactionHash', (hash) => console.log('hash', hash)) // eslint-disable-line no-console
+    .on('receipt', () => console.log('receipt!')) // eslint-disable-line no-console
+    .on('error', (error) => console.error(error.message))
 }
