@@ -1,5 +1,6 @@
 import 'firebase/auth'
 import 'firebase/firestore'
+import 'firebase/functions'
 
 import firebase from 'firebase/app'
 
@@ -14,6 +15,7 @@ if (!firebase.apps.length) {
 
 export const auth = firebase.auth()
 export const db = firebase.firestore()
+export const functions = firebase.functions()
 
 // eslint-disable-next-line import/no-default-export
 export default firebase
