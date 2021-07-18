@@ -2,7 +2,7 @@ import { useWeb3 } from 'src/hooks/useWeb3'
 import useSWR from 'swr'
 
 export const useToken = () => {
-  const { contract, address, toContract } = useWeb3()
+  const { contract, address, runContract } = useWeb3()
 
   const { data: totalSupply } = useSWR(['totalSupply', contract], () => contract?.methods.totalSupply().call())
   const { data: balance, revalidate } = useSWR(['balance', contract, address], () =>
@@ -11,7 +11,7 @@ export const useToken = () => {
 
   const transfer = async (recipient: string, amount: number) => {
     const abi = contract?.methods.transfer(recipient, amount).encodeABI()
-    await toContract(abi)
+    await runContract(abi)
     revalidate()
   }
 
